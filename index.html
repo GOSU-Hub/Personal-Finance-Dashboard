@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">Finsight</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-section="dashboard">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="#" class="nav-item" data-section="add">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Add Transaction
+      </a>
+      <a href="#" class="nav-item" data-section="transactions">
+        <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Transactions
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <span class="sidebar-version">v1.0.0</span>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main">
+
+    <!-- TOP BAR -->
+    <header class="topbar">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-title" id="sectionTitle">Dashboard</div>
+      <div class="topbar-actions">
+        <button class="btn-refresh" id="refreshBtn" title="Refresh data">
+          <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="loading-inner">
+        <div class="loading-ring"></div>
+        <span>Loading data…</span>
+      </div>
+    </div>
+
+    <!-- ===== SECTION: DASHBOARD ===== -->
+    <section class="section active" id="section-dashboard">
+
+      <!-- FILTER BAR -->
+      <div class="filter-bar">
+        <div class="filter-group">
+          <label>Period</label>
+          <select id="filterPeriod">
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="month" selected>This Month</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Type</label>
+          <select id="filterType">
+            <option value="all">All</option>
+            <option value="Income">Income</option>
+            <option value="Expense">Expense</option>
+          </select>
+        </div>
+        <button class="btn-apply" id="applyFilter">Apply</button>
+      </div>
+
+      <!-- SUMMARY CARDS -->
+      <div class="cards-grid">
+        <div class="card card-income">
+          <div class="card-label">Total Income</div>
+          <div class="card-amount" id="totalIncome">฿ —</div>
+          <div class="card-sub" id="incomeCount">0 transactions</div>
+          <div class="card-icon">↑</div>
+        </div>
+        <div class="card card-expense">
+          <div class="card-label">Total Expense</div>
+          <div class="card-amount" id="totalExpense">฿ —</div>
+          <div class="card-sub" id="expenseCount">0 transactions</div>
+          <div class="card-icon">↓</div>
+        </div>
+        <div class="card card-balance">
+          <div class="card-label">Net Balance</div>
+          <div class="card-amount" id="netBalance">฿ —</div>
+          <div class="card-sub" id="balanceStatus">—</div>
+          <div class="card-icon">◎</div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <span>Expense Breakdown</span>
+            <span class="chart-badge">Pie</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="pieChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <span>Income vs Expense</span>
+            <span class="chart-badge">Bar</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- LATEST TRANSACTIONS -->
+      <div class="latest-card">
+        <div class="latest-header">
+          <span>Latest Transactions</span>
+          <a href="#" class="latest-link" data-section="transactions">View all →</a>
+        </div>
+        <div id="latestList" class="latest-list">
+          <div class="empty-state">No transactions yet</div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===== SECTION: ADD TRANSACTION ===== -->
+    <section class="section" id="section-add">
+      <div class="form-card">
+        <h2 class="form-title">New Transaction</h2>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="txType">Type</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active" data-val="Income" id="btnIncome">↑ Income</button>
+              <button class="toggle-btn" data-val="Expense" id="btnExpense">↓ Expense</button>
+            </div>
+            <input type="hidden" id="txType" value="Income" />
+          </div>
+        </div>
+
+        <div class="form-row two-col">
+          <div class="form-group">
+            <label for="txAmount">Amount (฿)</label>
+            <input type="number" id="txAmount" placeholder="0.00" min="0" step="0.01" />
+          </div>
+          <div class="form-group">
+            <label for="txDate">Date</label>
+            <input type="date" id="txDate" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="txCategory">Category</label>
+            <select id="txCategory">
+              <optgroup label="Income">
+                <option value="Salary">💼 Salary</option>
+                <option value="Freelance">💻 Freelance</option>
+                <option value="Investment">📈 Investment</option>
+                <option value="Other Income">💰 Other Income</option>
+              </optgroup>
+              <optgroup label="Expense">
+                <option value="Food">🍜 Food</option>
+                <option value="Transport">🚌 Transport</option>
+                <option value="Shopping">🛍️ Shopping</option>
+                <option value="Bills">📄 Bills</option>
+                <option value="Health">🏥 Health</option>
+                <option value="Entertainment">🎮 Entertainment</option>
+                <option value="Other">📦 Other</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="txNote">Note (optional)</label>
+            <input type="text" id="txNote" placeholder="e.g. Lunch at MBK" />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-submit" id="submitBtn">Add Transaction</button>
+        </div>
+
+        <!-- Feedback message -->
+        <div class="form-feedback" id="formFeedback"></div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION: TRANSACTIONS TABLE ===== -->
+    <section class="section" id="section-transactions">
+
+      <div class="table-controls">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label>Period</label>
+            <select id="tblFilterPeriod">
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="month" selected>This Month</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Type</label>
+            <select id="tblFilterType">
+              <option value="all">All</option>
+              <option value="Income">Income</option>
+              <option value="Expense">Expense</option>
+            </select>
+          </div>
+          <button class="btn-apply" id="tblApplyFilter">Apply</button>
+        </div>
+        <div class="table-search">
+          <input type="text" id="searchInput" placeholder="Search note or category…" />
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="tx-table" id="txTable">
+          <thead>
+            <tr>
+              <th data-col="date" class="sortable">Date <span class="sort-icon">↕</span></th>
+              <th data-col="type" class="sortable">Type <span class="sort-icon">↕</span></th>
+              <th data-col="amount" class="sortable">Amount <span class="sort-icon">↕</span></th>
+              <th data-col="category" class="sortable">Category <span class="sort-icon">↕</span></th>
+              <th>Note</th>
+              <th class="col-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="txTableBody">
+            <tr><td colspan="6" class="empty-state">No data</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span id="rowCount">0 records</span>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ===== EDIT MODAL ===== -->
+  <div class="modal-backdrop" id="editModalBackdrop">
+    <div class="modal" id="editModal">
+      <div class="modal-header">
+        <span class="modal-title">Edit Transaction</span>
+        <button class="modal-close" id="editModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- hidden index -->
+        <input type="hidden" id="editIndex" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type</label>
+            <div class="toggle-group">
+              <button class="toggle-btn active" data-val="Income" id="editBtnIncome">↑ Income</button>
+              <button class="toggle-btn" data-val="Expense" id="editBtnExpense">↓ Expense</button>
+            </div>
+            <input type="hidden" id="editType" value="Income" />
+          </div>
+        </div>
+
+        <div class="form-row two-col">
+          <div class="form-group">
+            <label for="editAmount">Amount (฿)</label>
+            <input type="number" id="editAmount" min="0" step="0.01" />
+          </div>
+          <div class="form-group">
+            <label for="editDate">Date</label>
+            <input type="date" id="editDate" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editCategory">Category</label>
+            <select id="editCategory">
+              <optgroup label="Income">
+                <option value="Salary">💼 Salary</option>
+                <option value="Freelance">💻 Freelance</option>
+                <option value="Investment">📈 Investment</option>
+                <option value="Other Income">💰 Other Income</option>
+              </optgroup>
+              <optgroup label="Expense">
+                <option value="Food">🍜 Food</option>
+                <option value="Transport">🚌 Transport</option>
+                <option value="Shopping">🛍️ Shopping</option>
+                <option value="Bills">📄 Bills</option>
+                <option value="Health">🏥 Health</option>
+                <option value="Entertainment">🎮 Entertainment</option>
+                <option value="Other">📦 Other</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editNote">Note</label>
+            <input type="text" id="editNote" placeholder="e.g. Lunch at MBK" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="editModalCancel">Cancel</button>
+        <button class="btn-submit" id="editModalSave">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DELETE CONFIRM MODAL ===== -->
+  <div class="modal-backdrop" id="deleteModalBackdrop">
+    <div class="modal modal-sm" id="deleteModal">
+      <div class="modal-header">
+        <span class="modal-title">Delete Transaction</span>
+        <button class="modal-close" id="deleteModalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-text">Are you sure you want to delete this transaction?</p>
+        <div class="confirm-detail" id="deleteDetail"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="deleteModalCancel">Cancel</button>
+        <button class="btn-delete-confirm" id="deleteModalConfirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
