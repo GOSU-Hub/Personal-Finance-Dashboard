@@ -6,7 +6,7 @@
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 // 🔧 แก้ GAS_URL เป็น URL ของ Google Apps Script Web App ที่ Deploy แล้ว
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwKWo_RwW6tR_KrayYjs7NNNmrDuWLG4_CPpVf60g3RQXKxct0g74YL-dFs-rhSa8i9/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVd0qtz6F0bR6ZkmesvA1ttdVQsx0dh17KtD22TamRgeE5c9qMqxUaXVrB93taAzF8/exec';
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let allTransactions  = [];      // ข้อมูลทั้งหมดจาก API (แต่ละ item มี _row)
