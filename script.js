@@ -73,16 +73,16 @@ async function fetchTransactions() {
 }
 
 async function postTransaction(data) {
-  const res = await fetch(GAS_URL, {
+  await fetch(GAS_URL, {
     method: 'POST',
-    mode: 'no-cors', // 🔥 เพิ่มบรรทัดนี้
+    mode: 'no-cors', // 🔥 ตัวนี้คือ KEY
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({ action: 'addTransaction', ...data }),
   });
 
-  return { status: 'ok' }; // 👈 ต้อง fake response
+  return { status: 'ok' }; // 👈 fake response
 }
 
 async function patchTransaction(row, data) {
@@ -474,14 +474,11 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
       allTransactions.unshift({ _row: Date.now(), ...data });
       showFeedback('✓ Added (demo mode — not saved to Sheets)', 'success');
     } else {
-       const result = await postTransaction(data);
+       await postTransaction(data);
 
-      // ❌ ลบการเช็คนี้
-      // if (result.status !== 'ok') throw new Error(...)
-      
       allTransactions.unshift({ _row: Date.now(), ...data });
       showFeedback('✓ Transaction saved!', 'success');
-    }
+       
     document.getElementById('txAmount').value = '';
     document.getElementById('txNote').value   = '';
     document.getElementById('txDate').value   = today();
