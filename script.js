@@ -6,7 +6,7 @@
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 // 🔧 แก้ GAS_URL เป็น URL ของ Google Apps Script Web App ที่ Deploy แล้ว
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyVd0qtz6F0bR6ZkmesvA1ttdVQsx0dh17KtD22TamRgeE5c9qMqxUaXVrB93taAzF8/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzWVPs5bMzjNwNGlhKpc4z7pI_yX9XMEM3-3lht3b4ucYpGl5n23pbSVkZFsqtB98KQ/exec';
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let allTransactions  = [];      // ข้อมูลทั้งหมดจาก API (แต่ละ item มี _row)
@@ -73,16 +73,12 @@ async function fetchTransactions() {
 }
 
 async function postTransaction(data) {
-  await fetch(GAS_URL, {
+  const res = await fetch(GAS_URL, {
     method: 'POST',
-    mode: 'no-cors', // 🔥 ตัวนี้คือ KEY
-    headers: {
-      'Content-Type': 'application/json'
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'addTransaction', ...data }),
   });
-
-  return { status: 'ok' }; // 👈 fake response
+  return res.json();
 }
 
 async function patchTransaction(row, data) {
@@ -470,25 +466,22 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   const data = { date, type, amount, category, note };
 
   try {
-     if (GAS_URL.includes('YOUR_SCRIPT_ID')) {
-       allTransactions.unshift({ _row: Date.now(), ...data });
-       showFeedback('✓ Added (demo mode — not saved to Sheets)', 'success');
-     } else {
-   
-       await postTransaction(data);
-   
-       allTransactions.unshift({ _row: Date.now(), ...data });
-       showFeedback('✓ Transaction saved!', 'success');
-   
-       document.getElementById('txAmount').value = '';
-       document.getElementById('txNote').value   = '';
-       document.getElementById('txDate').value   = today();
-       renderDashboard();
-     }
-   
-   } catch (err) {
-     showFeedback('✗ Error: ' + err.message, 'error');
-   }
+    if (GAS_URL.includes('YOUR_SCRIPT_ID')) {
+      allTransactions.unshift({ _row: Date.now(), ...data });
+      showFeedback('✓ Added (demo mode — not saved to Sheets)', 'success');
+    } else {
+      const result = await postTransaction(data);
+      if (result.status !== 'ok') throw new Error(result.message || 'Unknown error');
+      allTransactions.unshift({ _row: result.row, ...data });
+      showFeedback('✓ Transaction saved to Google Sheets!', 'success');
+    }
+    document.getElementById('txAmount').value = '';
+    document.getElementById('txNote').value   = '';
+    document.getElementById('txDate').value   = today();
+    renderDashboard();
+  } catch (err) {
+    showFeedback('✗ Error: ' + err.message, 'error');
+  }
 
   setLoading(false);
   submitBtn.disabled = false;
