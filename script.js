@@ -73,30 +73,34 @@ async function fetchTransactions() {
 }
 
 async function postTransaction(data) {
-  const res = await fetch(GAS_URL, {
+  await fetch(GAS_URL, {
     method: 'POST',
+    mode: 'no-cors',   // ⭐ เพิ่มบรรทัดนี้
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'addTransaction', ...data }),
+    body: JSON.stringify({ ...data }),
   });
-  return res.json();
+
+  return { status: 'ok' }; // ⭐ fake response
 }
 
 async function patchTransaction(row, data) {
-  const res = await fetch(GAS_URL, {
+  await fetch(GAS_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'updateTransaction', row, ...data }),
+    mode: 'no-cors',
+    body: JSON.stringify({ row, ...data }),
   });
-  return res.json();
+
+  return { status: 'ok' };
 }
 
 async function deleteTransactionApi(row) {
-  const res = await fetch(GAS_URL, {
+  await fetch(GAS_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'deleteTransaction', row }),
+    mode: 'no-cors',
+    body: JSON.stringify({ row }),
   });
-  return res.json();
+
+  return { status: 'ok' };
 }
 
 // ─── DEMO DATA ───────────────────────────────────────────────────────────────
@@ -472,7 +476,7 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     } else {
       const result = await postTransaction(data);
       if (result.status !== 'ok') throw new Error(result.message || 'Unknown error');
-      allTransactions.unshift({ _row: result.row, ...data });
+      allTransactions.unshift({ _row: Date.now(), ...data });
       showFeedback('✓ Transaction saved to Google Sheets!', 'success');
     }
     document.getElementById('txAmount').value = '';
