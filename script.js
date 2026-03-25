@@ -470,22 +470,25 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
   const data = { date, type, amount, category, note };
 
   try {
-    if (GAS_URL.includes('YOUR_SCRIPT_ID')) {
-      allTransactions.unshift({ _row: Date.now(), ...data });
-      showFeedback('✓ Added (demo mode — not saved to Sheets)', 'success');
-    } else {
+     if (GAS_URL.includes('YOUR_SCRIPT_ID')) {
+       allTransactions.unshift({ _row: Date.now(), ...data });
+       showFeedback('✓ Added (demo mode — not saved to Sheets)', 'success');
+     } else {
+   
        await postTransaction(data);
-
-      allTransactions.unshift({ _row: Date.now(), ...data });
-      showFeedback('✓ Transaction saved!', 'success');
-       
-    document.getElementById('txAmount').value = '';
-    document.getElementById('txNote').value   = '';
-    document.getElementById('txDate').value   = today();
-    renderDashboard();
-  } catch (err) {
-    showFeedback('✗ Error: ' + err.message, 'error');
-  }
+   
+       allTransactions.unshift({ _row: Date.now(), ...data });
+       showFeedback('✓ Transaction saved!', 'success');
+   
+       document.getElementById('txAmount').value = '';
+       document.getElementById('txNote').value   = '';
+       document.getElementById('txDate').value   = today();
+       renderDashboard();
+     }
+   
+   } catch (err) {
+     showFeedback('✗ Error: ' + err.message, 'error');
+   }
 
   setLoading(false);
   submitBtn.disabled = false;
